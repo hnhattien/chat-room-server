@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -15,20 +12,20 @@ model Message {
   text   String
   userId String
   roomId String
-  User   User?  @relation(fields: [userId], references: [id])
-  Room   Room?  @relation(fields: [roomId], references: [id])
+  room   Room   @relation(fields: [roomId], references: [id])
+  user   User   @relation(fields: [userId], references: [id])
 }
 
 model User {
-  id                  String      @id @default(uuid())
-  email               String      @unique
+  id                  String    @id @default(uuid())
+  email               String    @unique
   name                String
-  username            String      @unique
+  username            String    @unique
   password            String
-  messages            Message[]
   invalidateTokenUUID String
-  rooms               User_Room[]
-  avatar              String      @default("defaut_user.png")
+  avatar              String    @default("default_user.png")
+  messages            Message[]
+  rooms               Room[]
 }
 
 model TokenRotation {
@@ -38,19 +35,10 @@ model TokenRotation {
 }
 
 model Room {
-  id        String      @id @default(uuid())
+  id        String    @id @default(uuid())
   title     String
   maxClient Int
+  avatar    String    @default("default_room.png")
   messages  Message[]
-  avatar    String      @default("default_room.png")
-  users     User_Room[]
-}
-
-model User_Room {
-  user   User   @relation(fields: [userId], references: [id])
-  userId String
-  room   Room   @relation(fields: [roomId], references: [id])
-  roomId String
-
-  @@id([userId, roomId])
+  users     User[]
 }

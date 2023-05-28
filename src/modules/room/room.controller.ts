@@ -31,30 +31,62 @@ const createRoom = async (req: Request, res: Response, next: NextFunction) => {
     next(err);
   }
 };
-const getRooms = async (req: Request, res: Response, next: NextFunction) => {
+const getRoomsByUserId = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
-    const options: any = {};
-    if (get(req.query, "page") && get(req.query, "limit")) {
-      options["page"] = get(req.query, "page");
-      options["limit"] = get(req.query, "limit");
-    }
-    let query: any = {};
-    if (get(req.query, "maxClient")) {
-      query["maxClient"] = Number(get(req.query, "maxClient"));
-    }
+    const { userId } = req.params || {};
 
-    if (get(req.query, "title")) {
-      query["title"] = get(req.query, "title");
-    }
-    if (get(req.query, "id")) {
-      query["id"] = get(req.query, "id");
-    }
-    res.send(await roomService.getRooms(query, options));
+    res.send(await roomService.getRoomsByUserId(userId));
   } catch (err) {
+    next(err);
+  }
+};
+const createRoomMessage = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    console.log(req.body);
+    const messageData = pick(req.body, ["roomId", "message", "userId"]);
+    const data = await roomService.createRoomMessage(messageData);
+    res.send(data);
+  } catch (err) {
+    console.log(err);
+    next(err);
+  }
+};
+const getRoomsByTitle = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const title = get(req.query, "q");
+    const data = await roomService.findRoomsByTitle(title as string);
+    res.send(data);
+  } catch (err) {
+    console.log(err);
+    next(err);
+  }
+};
+const joinRoom = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { userId, roomId } = req.body || {};
+    const data = await roomService.joinRoom({ userId, roomId });
+    res.send(data);
+  } catch (err) {
+    console.log(err);
     next(err);
   }
 };
 export default {
   createRoom,
-  getRooms,
+  getRoomsByUserId,
+  createRoomMessage,
+  getRoomsByTitle,
+  joinRoom,
 };

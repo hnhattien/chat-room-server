@@ -1,4 +1,4 @@
-import { get, pick } from "lodash";
+import { get, omit, pick } from "lodash";
 import prismaClient from "../../core/database/prismaClient";
 import { UnAuthenticated } from "../../core/types/ErrorTypes";
 import bcryptUtil from "../../utils/bcrypt.util";
@@ -47,7 +47,7 @@ const authenticate = async (login: string, password: string) => {
     user.invalidateTokenUUID,
     config.REFRESH_TOKEN_EXPIRES_IN
   );
-  const userInfo = pick<User>(user, ["email", "username", "name"]);
+  const userInfo = omit<User>(user, ["password"]);
   return {
     userInfo,
     userId: get(user, "id"),
