@@ -1,3 +1,4 @@
+import socketConstant from "@core/constant/socketConstant";
 import { Server } from "socket.io";
 import { DefaultEventsMap } from "socket.io/dist/typed-events";
 
@@ -10,16 +11,19 @@ const socketEvents = (
       socket.join(roomId);
     });
     socket.on(
-      "new message room",
+      socketConstant.SEND_NEW_ROOM_MESSAGE,
       (data: { roomId: string; message: string; sender: string }) => {
         const { message, roomId, sender } = data || {};
-        socket.in(roomId).emit("messageRoom Received", {
+        socket.in(roomId).emit(socketConstant.SEND_NEW_ROOM_MESSAGE, {
           roomId: roomId,
           message: message,
           username: sender,
         });
       }
     );
+    socket.on(socketConstant.RECEIVE_NEW_ROOM_MESSAGE, (data) => {
+      socket.broadcast.emit(socketConstant.RECEIVE_NEW_ROOM_MESSAGE, data);
+    });
   });
   io.of("/video").on("connection", (socket) => {
     console.log("a user connected");

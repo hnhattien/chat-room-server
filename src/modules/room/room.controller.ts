@@ -83,10 +83,21 @@ const joinRoom = async (req: Request, res: Response, next: NextFunction) => {
     next(err);
   }
 };
+const leaveRoom = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { userId, roomId } = req.body || {};
+    const data = await roomService.leaveRoom({ userId, roomId });
+    res.send(data);
+  } catch (err) {
+    console.log(err);
+    next(err);
+  }
+};
 export default {
   createRoom,
   getRoomsByUserId,
   createRoomMessage,
   getRoomsByTitle,
   joinRoom,
+  leaveRoom
 };

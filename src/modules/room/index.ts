@@ -8,7 +8,13 @@ export const roomRoutes = (app: Application) => {
     roomController.createRoomMessage
   );
   app.post("/api/v1/room", middleware.authenticate, roomController.createRoom);
+  app.post(
+    "/api/v1/room/leave",
+    middleware.authenticate,
+    roomController.leaveRoom
+  );
+  app.get("/api/v1/search-room", roomController.getRoomsByTitle);
+
   app.get("/api/v1/room/user/:userId", roomController.getRoomsByUserId);
   app.post("/api/v1/room/join", roomController.joinRoom);
-  app.get("/api/v1/search-room", roomController.getRoomsByTitle);
 };

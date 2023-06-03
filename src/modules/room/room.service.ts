@@ -20,7 +20,7 @@ const getRoomsByUserId = async (userId: string) => {
   return await prismaClient.room.findMany({
     where: {
       users: {
-        every: {
+        some: {
           id: userId,
         },
       },
@@ -88,10 +88,29 @@ const joinRoom = async (data: { roomId: string; userId: string }) => {
   });
 };
 
+const leaveRoom = async (data: { roomId: string; userId: string }) => {
+  await prismaClient.room.update({
+    where: {
+      id: data.roomId,
+    },
+    data: {
+      users: {
+        disconnect: {
+          id: data.userId,
+        },
+      },
+    },
+  });
+  return {
+    id: data.roomId,
+  };
+};
+
 export default {
   createRoom,
   getRoomsByUserId,
   createRoomMessage,
   findRoomsByTitle,
   joinRoom,
+  leaveRoom,
 };
