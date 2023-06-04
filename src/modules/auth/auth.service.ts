@@ -4,14 +4,13 @@ import { UnAuthenticated } from "../../core/types/ErrorTypes";
 import bcryptUtil from "../../utils/bcrypt.util";
 import { v4 } from "uuid";
 import { accessTokenHelper, refreshTokenHelper } from "../../utils/jwt.util";
-import { User } from "@prisma/client";
+import { TokenRotation, User } from "@prisma/client";
 import config from "../../core/config";
 import moment from "moment";
 import { InputValidationError } from "../../core/types/ErrorTypes";
 
 const authenticate = async (login: string, password: string) => {
-  let user: User | null;
-  user = await prismaClient.user.findFirst({
+  const user = await prismaClient.user.findFirst({
     where: {
       OR: [
         {
@@ -21,6 +20,9 @@ const authenticate = async (login: string, password: string) => {
           username: login,
         },
       ],
+    },
+    include: {
+      tokenRotation: true,
     },
   });
   if (!user) {
@@ -34,8 +36,16 @@ const authenticate = async (login: string, password: string) => {
   if (!isPasswordMatched) {
     throw new UnAuthenticated();
   }
-
-  const sessionId = v4();
+  let tokenRotation = user.tokenRotation;
+  if (!tokenRotation) {
+    tokenRotation = await prismaClient.tokenRotation.create({
+      data: {
+        jti: v4(),
+        userId: user.id,
+      },
+    });
+  }
+  const sessionId = tokenRotation.jti;
 
   const access_token: string = accessTokenHelper.issueAccessToken(
     get(user, "id"),
@@ -44,7 +54,7 @@ const authenticate = async (login: string, password: string) => {
   );
   const refresh_token: string = refreshTokenHelper.issueRefreshToken(
     user.id,
-    user.invalidateTokenUUID,
+    sessionId,
     config.REFRESH_TOKEN_EXPIRES_IN
   );
   const userInfo = omit<User>(user, ["password"]);
@@ -79,15 +89,20 @@ const register = async (
     throw new InputValidationError("Password not match");
   }
   const hashedPassword = await bcryptUtil.generateHash(password);
-  await prismaClient.user.create({
+  const createdUser = await prismaClient.user.create({
     data: {
       email: login,
       username: login,
       password: hashedPassword,
       name: login,
-      invalidateTokenUUID: v4(),
+      tokenRotation: {
+        create: {
+          jti: v4(),
+        },
+      },
     },
   });
+  return createdUser;
 };
 export default {
   authenticate,

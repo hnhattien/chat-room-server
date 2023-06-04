@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import { filter, get, map, omit, pick, set } from "lodash";
 import messageService from "./message.service";
 
-const getMessageByRoomId = async (
+const getMessageByChannelId = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -14,15 +14,15 @@ const getMessageByRoomId = async (
       options["limit"] = get(req.query, "limit");
     }
     let query: any = {};
-    if (get(req.params, "roomId")) {
-      query["roomId"] = get(req.params, "roomId");
+    if (get(req.params, "channelId")) {
+      query["channelId"] = get(req.params, "channelId");
     }
-    res.send(await messageService.getMessageByRoomId(query, options));
+    res.send(await messageService.getMessageByChannelId(query, options));
   } catch (err) {
     next(err);
   }
 };
 
 export default {
-  getMessageByRoomId,
+  getMessageByChannelId,
 };

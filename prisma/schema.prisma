@@ -8,37 +8,64 @@ datasource db {
 }
 
 model Message {
-  id     String @id @default(uuid())
-  text   String
-  userId String
-  roomId String
-  room   Room   @relation(fields: [roomId], references: [id])
-  user   User   @relation(fields: [userId], references: [id])
+  id             String        @id @default(uuid())
+  text           String
+  senderId       String
+  sender         User          @relation(fields: [senderId], references: [id])
+  conversation   Conversation? @relation(fields: [conversationId], references: [id])
+  conversationId String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  deleted        Boolean       @default(false)
+}
+
+model Conversation {
+  id        String    @id @default(uuid())
+  title     String
+  creatorId String
+  creator   User      @relation(fields: [creatorId], references: [id])
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+  messages  Message[]
+  deleted   Boolean   @default(false)
+  channel   Channel[]
 }
 
 model User {
-  id                  String    @id @default(uuid())
-  email               String    @unique
-  name                String
-  username            String    @unique
-  password            String
-  invalidateTokenUUID String
-  avatar              String    @default("default_user.png")
-  messages            Message[]
-  rooms               Room[]
+  id            String         @id @default(uuid())
+  email         String         @unique
+  name          String
+  username      String         @unique
+  password      String
+  avatar        String         @default("default_user.png")
+  messages      Message[]
+  channels      Channel[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime?      @updatedAt
+  conversation  Conversation[]
+  tokenRotation TokenRotation?
+  deleted       Boolean        @default(false)
 }
 
 model TokenRotation {
-  id     String @id @default(uuid())
-  userId String
-  iat    String
+  id        String    @id @default(uuid())
+  userId    String    @unique
+  user      User      @relation(fields: [userId], references: [id])
+  jti       String    @default(uuid())
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
 }
 
-model Room {
-  id        String    @id @default(uuid())
-  title     String
-  maxClient Int
-  avatar    String    @default("default_room.png")
-  messages  Message[]
-  users     User[]
+model Channel {
+  id             String       @id @default(uuid())
+  title          String
+  maxClient      Int
+  avatar         String       @default("default_channel.png")
+  users          User[]
+  isPrivate      Boolean      @default(false)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime?    @updatedAt
+  deleted        Boolean      @default(false)
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
 }

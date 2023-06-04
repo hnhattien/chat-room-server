@@ -1,11 +1,14 @@
-import { Room, User } from "@prisma/client";
+import { Channel, User } from "@prisma/client";
 import prismaClient from "../../core/database/prismaClient";
 import { get, map } from "lodash";
 import paginationUtil from "../../utils/pagination.util";
-const createRoom = async (room: Partial<Room>, defaultMembers: User[]) => {
-  return await prismaClient.room.create({
+const createChannel = async (
+  channel: Partial<Channel>,
+  defaultMembers: User[]
+) => {
+  return await prismaClient.channel.create({
     data: {
-      ...(room as Room),
+      ...(channel as Channel),
       users: {
         connect: map(defaultMembers, (user) => {
           return {
@@ -16,8 +19,8 @@ const createRoom = async (room: Partial<Room>, defaultMembers: User[]) => {
     },
   });
 };
-const getRoomsByUserId = async (userId: string) => {
-  return await prismaClient.room.findMany({
+const getChannelsByUserId = async (userId: string) => {
+  return await prismaClient.channel.findMany({
     where: {
       users: {
         some: {
@@ -27,12 +30,12 @@ const getRoomsByUserId = async (userId: string) => {
     },
     include: {
       users: true,
-      messages: true,
+      conversation: true,
     },
   });
 };
-const findRoomsByTitle = async (title: string) => {
-  return await prismaClient.room.findMany({
+const findChannelsByTitle = async (title: string) => {
+  return await prismaClient.channel.findMany({
     where: {
       title: {
         contains: title,
@@ -43,24 +46,24 @@ const findRoomsByTitle = async (title: string) => {
     },
   });
 };
-const createRoomMessage = async (data: {
-  roomId: string;
+const createChannelMessage = async (data: {
+  conversationId: string;
   message: string;
-  userId: string;
+  senderId: string;
 }) => {
-  const { message, roomId, userId } = data || {};
+  const { message, conversationId, senderId } = data || {};
   return await prismaClient.message.create({
     data: {
       text: message,
-      roomId,
-      userId,
+      conversationId,
+      senderId,
     },
   });
 };
-const joinRoom = async (data: { roomId: string; userId: string }) => {
-  await prismaClient.room.update({
+const joinChannel = async (data: { channelId: string; userId: string }) => {
+  await prismaClient.channel.update({
     where: {
-      id: data.roomId,
+      id: data.channelId,
     },
     data: {
       users: {
@@ -70,9 +73,9 @@ const joinRoom = async (data: { roomId: string; userId: string }) => {
       },
     },
   });
-  return await prismaClient.room.findFirst({
+  return await prismaClient.channel.findFirst({
     where: {
-      id: data.roomId,
+      id: data.channelId,
     },
     include: {
       users: {
@@ -88,10 +91,10 @@ const joinRoom = async (data: { roomId: string; userId: string }) => {
   });
 };
 
-const leaveRoom = async (data: { roomId: string; userId: string }) => {
-  await prismaClient.room.update({
+const leaveChannel = async (data: { channelId: string; userId: string }) => {
+  await prismaClient.channel.update({
     where: {
-      id: data.roomId,
+      id: data.channelId,
     },
     data: {
       users: {
@@ -102,15 +105,15 @@ const leaveRoom = async (data: { roomId: string; userId: string }) => {
     },
   });
   return {
-    id: data.roomId,
+    id: data.channelId,
   };
 };
 
 export default {
-  createRoom,
-  getRoomsByUserId,
-  createRoomMessage,
-  findRoomsByTitle,
-  joinRoom,
-  leaveRoom,
+  createChannel,
+  getChannelsByUserId,
+  createChannelMessage,
+  findChannelsByTitle,
+  joinChannel,
+  leaveChannel,
 };

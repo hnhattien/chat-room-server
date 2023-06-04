@@ -7,23 +7,28 @@ const socketEvents = (
 ) => {
   io.of("/chat").on("connection", (socket) => {
     console.log("a user connected");
-    socket.on("join room", (roomId) => {
-      socket.join(roomId);
+    socket.on(socketConstant.JOIN_CHAT_ROOM, (data, callback) => {
+      const { channelId, username } = data || {};
+      if (channelId) {
+        socket.join(channelId);
+      }
+      // callback({
+      //   message: `${username} joined channel.`,
+      // });
     });
     socket.on(
       socketConstant.SEND_NEW_ROOM_MESSAGE,
-      (data: { roomId: string; message: string; sender: string }) => {
-        const { message, roomId, sender } = data || {};
-        socket.in(roomId).emit(socketConstant.SEND_NEW_ROOM_MESSAGE, {
-          roomId: roomId,
-          message: message,
-          username: sender,
-        });
+      (data: { channelId: string; message: string; sender: string }) => {
+        const { message, channelId, sender } = data || {};
+        socket.broadcast
+          .in(channelId)
+          .emit(socketConstant.RECEIVE_NEW_ROOM_MESSAGE, {
+            channelId: channelId,
+            message: message,
+            username: sender,
+          });
       }
     );
-    socket.on(socketConstant.RECEIVE_NEW_ROOM_MESSAGE, (data) => {
-      socket.broadcast.emit(socketConstant.RECEIVE_NEW_ROOM_MESSAGE, data);
-    });
   });
   io.of("/video").on("connection", (socket) => {
     console.log("a user connected");
