@@ -20,9 +20,13 @@
     "uuid": "^9.0.0"
   },
   "scripts": {
-    "start": "ts-node -r tsconfig-paths/register src/index.ts",
     "generateKeyPair": "node ./scripts/generateKeyPair.js",
+    "copy-files": "cp -rf ./prisma dist",
+    "start": "ts-node-dev --ignore-watch node_modules -r tsconfig-paths/register  --respawn --transpileOnly ./src/index.ts",
     "dev": "nodemon",
+    "build": "tsc; cp package.json dist; npm run copy-files",
+    "start:prod": "NODE_ENV=production node -r ts-node/register/transpile-only -r tsconfig-paths/register ./dist/index.js",
+    "startup": "pm2 start npm --name \"chat-room-server\" -- run start:prod",
     "db:genClient": "prisma generate",
     "db:syncSchema": "prisma db push",
     "db:migrate": "prisma migrate dev",

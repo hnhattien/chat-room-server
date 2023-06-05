@@ -3,6 +3,8 @@ private.pem
 public.pem
 /node_modules
 
+access_token_secret_prod.pem
+refresh_token_secret_prod.pem
 # Logs
 logs
 *.log

@@ -17,5 +17,7 @@ function generate(filename) {
   writeFileSync(filename, keypairs.privateKey);
 }
 
-generate("access_token_secret.pem");
-generate("refresh_token_secret.pem");
+generate("access_token_secret_prod.pem");
+generate("refresh_token_secret_prod.pem");
+generate("access_token_secret_dev.pem");
+generate("refresh_token_secret_dev.pem");
