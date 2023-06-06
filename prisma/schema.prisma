@@ -28,7 +28,8 @@ model Conversation {
   updatedAt DateTime? @updatedAt
   messages  Message[]
   deleted   Boolean   @default(false)
-  channel   Channel[]
+  channelId String    @unique
+  channel   Channel   @relation(fields: [channelId], references: [id])
 }
 
 model User {
@@ -57,15 +58,14 @@ model TokenRotation {
 }
 
 model Channel {
-  id             String       @id @default(uuid())
-  title          String
-  maxClient      Int
-  avatar         String       @default("default_channel.png")
-  users          User[]
-  isPrivate      Boolean      @default(false)
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime?    @updatedAt
-  deleted        Boolean      @default(false)
-  conversationId String
-  conversation   Conversation @relation(fields: [conversationId], references: [id])
+  id           String        @id @default(uuid())
+  title        String
+  maxClient    Int
+  avatar       String        @default("default_channel.png")
+  users        User[]
+  isPrivate    Boolean       @default(false)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime?     @updatedAt
+  deleted      Boolean       @default(false)
+  conversation Conversation?
 }
